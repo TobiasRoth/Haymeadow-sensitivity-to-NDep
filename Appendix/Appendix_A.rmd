@@ -1,6 +1,9 @@
 ---
 title: "Appendix A: SEM Results of main model"
-output: pdf_document 
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
 abstract: "Appendix A for the MS The Sensitivity of hay meadow species diversity to nitrogen deposition"
 bibliography: references.bib  
 ---
@@ -46,9 +49,9 @@ load("Data-Raw/community_matrix.RData")
 ausw <- 
   (dat$Delarze == "4.5.1" | dat$Delarze == "4.5.2") &
   !is.na(dat$Delarze) &
-  !is.na(dat$Ellenberg_R) &
-  !(dat$Programm == "BDM" & dat$SR < 35) &
-  !(dat$Programm == "ALL-EMA" & is.na(match(dat$BFF, c(611, 851, 634, 852, 921611, 922611, 924611, 921852))))
+  !is.na(dat$Ellenberg_R) #&
+  # !(dat$Programm == "BDM" & dat$SR < 35) &
+  # !(dat$Programm == "ALL-EMA" & is.na(match(dat$BFF, c(611, 851, 634, 852, 921611, 922611, 924611, 921852))))
 dat <- dat[ausw,] 
 comdat <- comdat[ausw, ]
 
@@ -65,13 +68,17 @@ dat <- dat %>%
     soilN = Ellenberg_N - 3,
     NDVI = (NDVI - 6000) / 1000,
     LUI = landuse_intensity-0.5,
-    specpool = (species_pool - 250) / 10
+    specpool = (species_pool - 250) / 10,
+    incli = (inclination - 10) / 5,
+    BDM = as.integer(Programm == "BDM")
   )
 ```
 
 # Introduction
-In this appendix the detailed SEM results are provided from applying the main model to the data of the low and medium-altitude hay meadows (EUNIS R2.2) and the data of the mountain hay meadows (R2.3). As measure of species richness either the total species richness or the number of the target species were used.
-See the section *conceptual model* in the main body of the manuscript for a detailed description of the model. The model is depicted as a causal diagram in the following figure. 
+In this appendix the detailed SEM results are provided from applying differnt models to the data of the low and medium-altitude hay meadows (EUNIS R2.2) and the mountain hay meadows (R2.3). As measure of species richness either the total species richness or the number of the target species were used.
+
+# Main model
+In this chapter we applied the data to the conceptual model as described in the section *conceptual model* in the main body of the manuscript for a detailed description of the model. The main model is depicted as a causal diagram in the following figure. 
 
 ```{r conceptualmodel, fig.cap = "Conceptual model used in the SEM."}
 
@@ -114,7 +121,6 @@ Temperature -> NDVI
 
 # Plot conceptual model
 plot(conceptualmod)
-
 ```
 
 \newpage
@@ -130,8 +136,6 @@ Based on the conceptual model the following equations were used to analyse the d
   Landuse\ intensity &= Temperature + Precipitation \\
   Species\ pool &= Temperature 
 \end{align}
-
-# Model Results
 
 ```{r modformulas}
 # brms formulas
@@ -153,8 +157,8 @@ nameVariable = c("Plant species richness", "Nitrogen deposition", "Soil alkalini
 abbrVariable = c("SR", "ndep", "pH", "soilN", "NDVI", "light", "preci", "temp", "LUI", "specpool")
 ```
 
-The formulas were applied using the R-package `brms` [@brms]. The results are shown in the following tables. 
-
+These formulas were implemented and applied to the data using the R-package `brms` [@brms]. The results are shown in the following tables. The same results are also depicted in Figure 3 in the main body of the manuscript.
+\newpage
 ```{r r22sr}
 # R22, total species richness
 r22sr_SEM <- brm(
@@ -169,7 +173,7 @@ getres(r22sr_SEM) %>%
     digits = 2, 
     caption = "SEM Results from applyig the structural equation model for the **total species richness** applied to the to the data of the **low and medium-altitude hay meadows** (EUNIS R2.2).")
 ```
-
+\newpage
 ```{r r22uzl}
 # R22, target species richness
 r22uzl_SEM <- brm(
@@ -215,6 +219,276 @@ getres(r23uzl_SEM) %>%
     caption = "SEM Results from applyig the structural equation model for the **numer of target species** applied to the to the data of the **mountain altitude hay meadows** (EUNIS R2.3).")
 ```
 
+\newpage
+# Effect of monitoringprogramm
+While in the biodiversity monitoring Switzerland (BDM) two visits per year are conducted to survey the presence and absence of plants, for he agricultural species and habitats monitoring program (ALL-EMA) and the monitoring that was implemented to infer the effectiveness of habitat conservation in Switzerland (WBS) only a single visit was conducted. The monitoring programm may thus affect the number of recorded species. We thus added the variable BDM, which indicates weather the sampling site was part of the (BDM = 1). Otherwise the conceptual model is the same as the main model:
+
+```{r, fig.cap = "Conceptual model used in the SEM."}
+
+# Model description according to http://www.dagitty.net/
+conceptualmod <- dagitty('
+dag {
+bb="-5.227,-3.153,4.663,3.021"
+"Landuse intensity" [pos="-2.670,-1.256"]
+"Nitrogen deposition" [exposure,pos="-4.317,-2.070"]
+"Plant species richness" [outcome,pos="0.747,-1.471"]
+"Soil alkalinity" [pos="0.709,-2.095"]
+"Soil nutrient content" [pos="-2.795,-1.763"]
+"Species pool" [pos="-1.211,-1.085"]
+BDM [pos="0.335,-1.064"]
+Light [pos="-1.411,-1.427"]
+NDVI [pos="-0.974,-1.739"]
+Precipitation [pos="-4.229,-1.436"]
+Temperature [pos="-4.242,-1.119"]
+"Landuse intensity" -> "Nitrogen deposition"
+"Landuse intensity" -> "Plant species richness"
+"Landuse intensity" -> "Soil nutrient content"
+"Landuse intensity" -> Light
+"Nitrogen deposition" -> "Plant species richness" [pos="0.173,-2.085"]
+"Nitrogen deposition" -> "Soil alkalinity"
+"Nitrogen deposition" -> "Soil nutrient content"
+"Soil alkalinity" -> "Plant species richness"
+"Soil nutrient content" -> "Plant species richness" [pos="-0.538,-2.041"]
+"Soil nutrient content" -> NDVI
+"Species pool" -> "Plant species richness"
+BDM -> "Plant species richness"
+Light -> "Plant species richness"
+NDVI -> "Plant species richness"
+NDVI -> Light
+Precipitation -> "Landuse intensity"
+Precipitation -> "Nitrogen deposition"
+Precipitation -> NDVI
+Temperature -> "Landuse intensity"
+Temperature -> "Species pool"
+Temperature -> NDVI
+}
+')
+
+# Plot conceptual model
+plot(conceptualmod)
+```
+
+\newpage
+Based on the conceptual model the following equations were used to analyse the data:
+
+\begin{align}
+  Plant\ species\ richness &= \begin{aligned}[t] &Nitrogen\ deposition + Soil\ alkalinity + Soil\ nutrient\ content + NDVI + \\ &Light + Landuse\ intensity + Species\ pool + BDM \end{aligned} \\
+  Soil\ alkalinity &= Nitrogen\ deposition \\
+  Soil\ nutrient\ content &= Nitrogen\ deposition + Landuse\ intensity \\
+  NDVI &= Soil\ nutrient\ content + Precipitation + Temperature \\
+  Light &= NDVI + Landuse\ intensity \\
+  Nitrogen\ deposition &= Precipitation + Landuse\ intensity \\
+  Landuse\ intensity &= Temperature + Precipitation \\
+  Species\ pool &= Temperature 
+\end{align}
+
+```{r}
+# brms formulas
+mod_sr <- bf(SR ~ ndep + pH + soilN + NDVI + light + LUI + specpool + BDM, family = poisson)
+mod_ph <- bf(pH ~ ndep)
+mod_soilN <- bf(soilN ~ ndep + LUI)
+mod_ndvi <- bf(NDVI ~ soilN + preci + temp)
+mod_light <- bf(light ~ NDVI + LUI)
+mod_ndep <- bf(ndep ~ preci + LUI)
+mod_LUI <- bf(LUI ~ temp + preci)
+mod_spec_pool <- bf(specpool ~ temp)
+
+# Formulas
+nrformula <- c("(9)", "(10)",  "(11)", "(12)", "(13)", "(14)", "(15)", "(16)")
+nameformula <- c("SR", "pH", "soilN", "NDVI", "light", "ndep", "LUI", "specpool")
+
+# Variable names
+nameVariable = c("Plant species richness", "Nitrogen deposition", "Soil alkalinity", "Soil nutrient content", "NDVI", "Light", "Precipitation", "Temperature", "Landuse intensity", "Species pool", "BDM")
+abbrVariable = c("SR", "ndep", "pH", "soilN", "NDVI", "light", "preci", "temp", "LUI", "specpool", "BDM")
+```
+
+These formulas were implemented and applied to the data. The results are shown in the following tables.
+\newpage
+```{r}
+# R22, total species richness
+r22sr_SEM <- brm(
+  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R22") %>% mutate(SR = as.integer(SR)),
+  file = "Modres/BDMeffect/SEM-R22-SR"
+) 
+
+# Res Table
+getres(r22sr_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig the conceptual model of Fig. 2 for the **total species richness** applied to the to the data of the **low and medium-altitude hay meadows** (EUNIS R2.2).")
+```
+\newpage
+```{r}
+# R22, target species richness
+r22uzl_SEM <- brm(
+  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R22") %>% mutate(SR = as.integer(UZL)),
+  file = "Modres/BDMeffect/SEM-R22-UZL"
+) 
+
+# Res Table
+getres(r22uzl_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig thetconceptual model of Fig. 2 for the **numer of target species** applied to the to the data of the **low and medium-altitude hay meadows** (EUNIS R2.2).")
+```
+\newpage
+```{r}
+# R23, total species richness
+r23sr_SEM <- brm(
+  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R23") %>% mutate(SR = as.integer(SR)),
+  file = "Modres/BDMeffect/SEM-R23-SR"
+) 
+
+# Res Table
+getres(r23sr_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig the conceptual model of Fig. 2 for the **total species richness** applied to the to the data of the **lmountain altitude hay meadows** (EUNIS R2.3).")
+```
+\newpage
+```{r}
+# R23, target species richness
+r23uzl_SEM <- brm(
+  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R23") %>% mutate(SR = as.integer(UZL)),
+  file = "Modres/BDMeffect/SEM-R23-UZL"
+) 
+
+# Res Table
+getres(r23uzl_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig the conceptual model of Fig. 2 for the **numer of target species** applied to the to the data of the **mountain altitude hay meadows** (EUNIS R2.3).")
+```
+
+\newpage
+# Starting model
+We started the analyses with a simpler model that is shown in the following graph. Only later we adapted this starting model based on the graphical model by @demalach2018toward to the main model. The results of this simpler model probably has shaped our conclusion. Accordingly, we also present the results of this model here. This simpler model is a selection of the variables from the main model, except for Inclination. In this simpler model we used inclination of the terrain at the sampling site as a proxi for the landuse intensity (higher inclination = lower landuse intensity). In the main model we then replaced inclination by the landuse intensity index. 
+
+```{r, fig.cap = "Conceptual model used in the SEM."}
+
+# Model description according to http://www.dagitty.net/
+conceptualmod <- dagitty('
+dag {
+bb="-5.227,-3.153,4.663,3.021"
+"Nitrogen deposition" [exposure,pos="-4.303,-2.504"]
+"Plant species richness" [outcome,pos="-0.720,-2.261"]
+"Soil alkalinity" [pos="-2.147,-2.641"]
+Inclination [pos="-4.465,-1.514"]
+Light [pos="-0.987,-1.753"]
+NDVI [pos="-2.292,-1.544"]
+Precipitation [pos="-4.497,-1.812"]
+Temperature [pos="-4.506,-2.100"]
+"Nitrogen deposition" -> "Plant species richness"
+"Nitrogen deposition" -> "Soil alkalinity"
+"Nitrogen deposition" -> NDVI
+"Soil alkalinity" -> "Plant species richness"
+Inclination -> "Plant species richness"
+Inclination -> NDVI
+Light -> "Plant species richness"
+NDVI -> "Plant species richness"
+NDVI -> Light
+Precipitation -> "Plant species richness"
+Precipitation -> NDVI
+Temperature -> "Plant species richness"
+Temperature -> NDVI
+}
+')
+
+# Plot conceptual model
+plot(conceptualmod)
+```
+
+\newpage
+Based on the conceptual model the following equations were used to analyse the data:
+
+\begin{align}
+  Plant\ species\ richness &= \begin{aligned}[t] &Nitrogen\ deposition + Soil\ alkalinity + Temperature + Precipitation + \\ &Inclination + NDVI + Light \end{aligned} \\
+  Soil\ alkalinity &= Nitrogen\ deposition \\
+  NDVI &= Nirogen\ deposition + Temperature + Precipitation + Inclination\\
+  Light &= NDVI
+\end{align}
+
+```{r}
+# brms formulas
+mod_sr <- bf(SR ~ ndep + pH + temp + preci + incli + NDVI + light, family = poisson)
+mod_ph <- bf(pH ~ ndep)
+mod_ndvi <- bf(NDVI ~ ndep + temp + preci + incli)
+mod_light <- bf(light ~ NDVI)
+
+# Formulas
+nrformula <- c("(17)", "(18)",  "(19)", "(20)", "(21)")
+nameformula <- c("SR", "pH", "NDVI", "light")
+
+# Variable names
+nameVariable = c("Plant species richness", "Nitrogen deposition", "Soil alkalinity", "NDVI", "Light", "Precipitation", "Temperature", "Inclination")
+abbrVariable = c("SR", "ndep", "pH", "NDVI", "light", "preci", "temp", "incli")
+```
+
+These formulas were implemented and applied to the data using the R-package `brms` [@brms]. The results are shown in the following tables. 
+\newpage
+```{r}
+# R22, total species richness
+r22sr_SEM <- brm(
+  mod_sr  + mod_ph + mod_ndvi + mod_light + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R22") %>% mutate(SR = as.integer(SR)),
+  file = "Modres/firstmod/SEM-R22-SR"
+) 
+
+# Res Table
+getres(r22sr_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig the structural equation model depicted in Fig. 3 for the **total species richness** applied to the to the data of the **low and medium-altitude hay meadows** (EUNIS R2.2).")
+```
+\newpage
+```{r}
+# R22, target species richness
+r22uzl_SEM <- brm(
+  mod_sr  + mod_ph + mod_ndvi + mod_light + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R22") %>% mutate(SR = as.integer(UZL)),
+  file = "Modres/firstmod/SEM-R22-UZL"
+) 
+
+# Res Table
+getres(r22uzl_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig the structural equation model depicted in Fig. 3 for the **numer of target species** applied to the to the data of the **low and medium-altitude hay meadows** (EUNIS R2.2).")
+```
+\newpage
+```{r}
+# R23, total species richness
+r23sr_SEM <- brm(
+  mod_sr  + mod_ph + mod_ndvi + mod_light + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R23") %>% mutate(SR = as.integer(SR)),
+  file = "Modres/firstmod/SEM-R23-SR"
+) 
+
+# Res Table
+getres(r23sr_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig the structural equation model depicted in Fig. 3 for the **total species richness** applied to the to the data of the **lmountain altitude hay meadows** (EUNIS R2.3).")
+```
+\newpage
+```{r}
+# R23, target species richness
+r23uzl_SEM <- brm(
+  mod_sr  + mod_ph + mod_ndvi + mod_light + set_rescor(FALSE),
+  data = dat %>% filter(EUNIS == "R23") %>% mutate(SR = as.integer(UZL)),
+  file = "Modres/firstmod/SEM-R23-UZL"
+) 
+
+# Res Table
+getres(r23uzl_SEM) %>% 
+  knitr::kable(
+    digits = 2, 
+    caption = "SEM Results from applyig the structural equation model depicted in Fig. 3 for the **numer of target species** applied to the to the data of the **mountain altitude hay meadows** (EUNIS R2.3).")
+```
 
 
 # References

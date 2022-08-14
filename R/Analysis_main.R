@@ -36,12 +36,13 @@ nrow(dat)
 ausw <- 
   (dat$Delarze == "4.5.1" | dat$Delarze == "4.5.2") &
   !is.na(dat$Delarze) &
-  !is.na(dat$Ellenberg_R) &
-  !(dat$Programm == "BDM" & dat$SR < 35) &
-  !(dat$Programm == "ALL-EMA" & is.na(match(dat$BFF, c(611, 851, 634, 852, 921611, 922611, 924611, 921852))))
+  !is.na(dat$Ellenberg_R) 
 dat <- dat[ausw,] 
 comdat <- comdat[ausw, ]
 nrow(dat)
+
+# Elevational range
+range(dat$elevation) %>% round()
 
 # Transfrom vairables
 dat <- dat %>% 
@@ -70,33 +71,33 @@ bb="-5.227,-3.153,4.663,3.021"
 "Landuse intensity" [pos="-2.670,-1.256"]
 "Nitrogen deposition" [exposure,pos="-4.317,-2.070"]
 "Plant species richness" [outcome,pos="0.747,-1.471"]
-"Soil acidity" [pos="-0.301,-2.022"]
+"Soil alkalinity" [pos="0.709,-2.095"]
 "Soil nutrient content" [pos="-2.795,-1.763"]
-"Species Pool" [pos="-2.084,-0.939"]
-Biomass [pos="-1.411,-1.705"]
+"Species pool" [pos="-1.211,-1.085"]
 Light [pos="-1.411,-1.427"]
+NDVI [pos="-0.974,-1.739"]
 Precipitation [pos="-4.229,-1.436"]
 Temperature [pos="-4.242,-1.119"]
 "Landuse intensity" -> "Nitrogen deposition"
 "Landuse intensity" -> "Plant species richness"
 "Landuse intensity" -> "Soil nutrient content"
 "Landuse intensity" -> Light
-"Nitrogen deposition" -> "Plant species richness" [pos="1.221,-2.539"]
-"Nitrogen deposition" -> "Soil acidity"
+"Nitrogen deposition" -> "Plant species richness" [pos="0.173,-2.085"]
+"Nitrogen deposition" -> "Soil alkalinity"
 "Nitrogen deposition" -> "Soil nutrient content"
-"Soil acidity" -> "Plant species richness"
+"Soil alkalinity" -> "Plant species richness"
 "Soil nutrient content" -> "Plant species richness" [pos="-0.538,-2.041"]
-"Soil nutrient content" -> Biomass
-"Species Pool" -> "Plant species richness"
-Biomass -> "Plant species richness"
-Biomass -> Light
+"Soil nutrient content" -> NDVI
+"Species pool" -> "Plant species richness"
 Light -> "Plant species richness"
+NDVI -> "Plant species richness"
+NDVI -> Light
 Precipitation -> "Landuse intensity"
 Precipitation -> "Nitrogen deposition"
-Precipitation -> Biomass
+Precipitation -> NDVI
 Temperature -> "Landuse intensity"
-Temperature -> "Species Pool"
-Temperature -> Biomass
+Temperature -> "Species pool"
+Temperature -> NDVI
 }
 ')
 
@@ -112,7 +113,7 @@ r22sr_univar <- brm(
   SR ~ ndep,
   data = dat %>% filter(EUNIS == "R22"),
   family = poisson,
-  file = "Modres/univariate-R22-SR"
+  file = "Modres/main_model/univariate-R22-SR"
 ) 
 
 # R2.2, number of target species
@@ -120,7 +121,7 @@ r22uzl_univar <- brm(
   UZL ~ ndep,
   data = dat %>% filter(EUNIS == "R22"),
   family = poisson,
-  file = "Modres/univariate-R22-UZL"
+  file = "Modres/main_model/univariate-R22-UZL"
 ) 
 
 # R2.3, total species richness
@@ -128,7 +129,7 @@ r23sr_univar <- brm(
   SR ~ ndep,
   data = dat %>% filter(EUNIS == "R23"),
   family = poisson,
-  file = "Modres/univariate-R23-SR"
+  file = "Modres/main_model/univariate-R23-SR"
 ) 
 
 # R23, number of target species
@@ -136,7 +137,7 @@ r23uzl_univar <- brm(
   UZL ~ ndep,
   data = dat %>% filter(EUNIS == "R23"),
   family = poisson,
-  file = "Modres/univariate-R23-UZL"
+  file = "Modres/main_model/univariate-R23-UZL"
 )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -151,7 +152,7 @@ r22sr_minimaladjust <- brm(
   SR ~ ndep + LUI + preci,
   data = dat %>% filter(EUNIS == "R22"),
   family = poisson,
-  file = "Modres/minimaladjust-R22-SR"
+  file = "Modres/main_model/minimaladjust-R22-SR"
 ) 
 
 # R2.2, number of target species
@@ -159,7 +160,7 @@ r22uzl_minimaladjust <- brm(
   UZL ~ ndep + LUI + preci,
   data = dat %>% filter(EUNIS == "R22"),
   family = poisson,
-  file = "Modres/minimaladjust-R22-UZL"
+  file = "Modres/main_model/minimaladjust-R22-UZL"
 ) 
 
 # R2.3, total species richness
@@ -167,7 +168,7 @@ r23sr_minimaladjust <- brm(
   SR ~ ndep + LUI + preci,
   data = dat %>% filter(EUNIS == "R23"),
   family = poisson,
-  file = "Modres/minimaladjust-R23-SR"
+  file = "Modres/main_model/minimaladjust-R23-SR"
 ) 
 
 # R23, number of target species
@@ -175,7 +176,7 @@ r23uzl_minimaladjust <- brm(
   UZL ~ ndep + LUI + preci,
   data = dat %>% filter(EUNIS == "R23"),
   family = poisson,
-  file = "Modres/minimaladjust-R23-UZL"
+  file = "Modres/main_model/minimaladjust-R23-UZL"
 )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -187,7 +188,7 @@ r22sr_minimaladjust_wrong <- brm(
   SR ~ ndep + LUI + preci + pH,
   data = dat %>% filter(EUNIS == "R22"),
   family = poisson,
-  file = "Modres/minimaladjust_wrong-R22-SR"
+  file = "Modres/main_model/minimaladjust_wrong-R22-SR"
 ) 
 
 # R2.2, number of target species
@@ -195,7 +196,7 @@ r22uzl_minimaladjust_wrong <- brm(
   UZL ~ ndep + LUI + preci + pH,
   data = dat %>% filter(EUNIS == "R22"),
   family = poisson,
-  file = "Modres/minimaladjust_wrong-R22-UZL"
+  file = "Modres/main_model/minimaladjust_wrong-R22-UZL"
 ) 
 
 # R2.3, total species richness
@@ -203,7 +204,7 @@ r23sr_minimaladjust_wrong <- brm(
   SR ~ ndep + LUI + preci + pH,
   data = dat %>% filter(EUNIS == "R23"),
   family = poisson,
-  file = "Modres/minimaladjust_wrong-R23-SR"
+  file = "Modres/main_model/minimaladjust_wrong-R23-SR"
 ) 
 
 # R23, number of target species
@@ -211,7 +212,7 @@ r23uzl_minimaladjust_wrong <- brm(
   UZL ~ ndep + LUI + preci + pH,
   data = dat %>% filter(EUNIS == "R23"),
   family = poisson,
-  file = "Modres/minimaladjust_wrong-R23-UZL"
+  file = "Modres/main_model/minimaladjust_wrong-R23-UZL"
 )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -239,7 +240,7 @@ r22sr_changepoint <- brm(
   changepoint_model,
   prior = bprior,
   data = dat %>% filter(EUNIS == "R22") %>% mutate(S = SR),
-  file = "Modres/changepoint-R22-SR"
+  file = "Modres/main_model/changepoint-R22-SR"
 ) 
 
 # R2.2, number of target species
@@ -247,7 +248,7 @@ r22uzl_changepoint <- brm(
   changepoint_model,
   prior = bprior,
   data = dat %>% filter(EUNIS == "R22") %>% mutate(S = UZL),
-  file = "Modres/changepoint-R22-UZL"
+  file = "Modres/main_model/changepoint-R22-UZL"
 ) 
 
 # R2.3, total species richness
@@ -255,7 +256,7 @@ r23sr_changepoint <- brm(
   changepoint_model,
   prior = bprior,
   data = dat %>% filter(EUNIS == "R23") %>% mutate(S = SR),
-  file = "Modres/changepoint-R23-SR"
+  file = "Modres/main_model/changepoint-R23-SR"
 ) 
 
 # R2.3, number of target species
@@ -263,7 +264,7 @@ r23uzl_changepoint <- brm(
   changepoint_model,
   prior = bprior,
   data = dat %>% filter(EUNIS == "R23") %>% mutate(S = UZL),
-  file = "Modres/changepoint-R23-UZL"
+  file = "Modres/main_model/changepoint-R23-UZL"
 ) 
 
 # Analyse results
@@ -372,17 +373,17 @@ dev.off()
 # Compare sensitivity estimates ----
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# R2.2, total species richness
+# R22, total species richness
 print(r22sr_univar, digits = 2)
 print(r22sr_minimaladjust, digits = 2)
 print(r22sr_minimaladjust_wrong, digits = 2)
 
-# R2.2, number of target species
+# R23, total species richness
 print(r23sr_univar, digits = 2)
 print(r23sr_minimaladjust, digits = 2)
 print(r23sr_minimaladjust_wrong, digits = 2)
 
-# R2.3, total species richness
+# R22, number of target species
 print(r22uzl_univar, digits = 2)
 print(r22uzl_minimaladjust, digits = 2)
 print(r22uzl_minimaladjust_wrong, digits = 2)
@@ -391,55 +392,3 @@ print(r22uzl_minimaladjust_wrong, digits = 2)
 print(r23uzl_univar, digits = 2)
 print(r23uzl_minimaladjust, digits = 2)
 print(r23uzl_minimaladjust_wrong, digits = 2)
-
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Fit SEMs ----
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-# Formulate submodels based on conceptual model 
-mod_sr <- bf(S ~ ndep + pH + soilN + NDVI + light + LUI + spec_pool, family = poisson)
-mod_ndvi <- bf(NDVI ~ soilN + preci + temp)
-mod_light <- bf(light ~ NDVI + LUI)
-mod_ph <- bf(pH ~ ndep)
-mod_soilN <- bf(soilN ~ ndep + LUI)
-mod_ndep <- bf(ndep ~ preci + LUI)
-mod_LUI <- bf(LUI ~ temp + preci)
-mod_spec_pool <- bf(spec_pool ~ temp)
-
-# R22, total species richness
-r22sr_SEM <- brm(
-  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
-  data = dat %>% filter(EUNIS == "R22") %>% mutate(S = as.integer(SR)),
-  file = "Modres/SEM-R22-SR"
-) 
-
-# R22, number of target species
-r22uzl_SEM <- brm(
-  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
-  data = dat %>% filter(EUNIS == "R22") %>% mutate(S = as.integer(UZL)),
-  file = "Modres/SEM-R22-UZL"
-) 
-
-# R23, total species richness
-r23sr_SEM <- brm(
-  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
-  data = dat %>% filter(EUNIS == "R23") %>% mutate(S = as.integer(SR)),
-  file = "Modres/SEM-R23-SR"
-) 
-
-# R23, number of target species
-r23uzl_SEM <- brm(
-  mod_sr  + mod_ndvi + mod_light + mod_ph + mod_soilN + mod_ndep + mod_LUI + mod_spec_pool + set_rescor(FALSE),
-  data = dat %>% filter(EUNIS == "R23") %>% mutate(S = as.integer(UZL)),
-  file = "Modres/SEM-R23-UZL"
-) 
-
-# Compare results
-print(r22sr_SEM, digits = 2)
-print(r22uzl_SEM, digits = 2)
-print(r23sr_SEM, digits = 2)
-print(r23uzl_SEM, digits = 2)
-
-# Save Results as table
-
-
