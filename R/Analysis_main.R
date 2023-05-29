@@ -277,7 +277,7 @@ print(r23uzl_changepoint, digits = 2, robust = TRUE)
 tymax <- 80
 pr22sr <- plot(conditional_effects(r22sr_changepoint), plot = FALSE)[[3]] + 
   ylim(0, tymax) + 
-  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R22") %>% mutate(S = SR), inherit.aes = FALSE, cex = 0.6, col = "grey") +
+  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R22") %>% mutate(S = SR), inherit.aes = FALSE, cex = 0.4, col = "grey") +
   annotate(
     geom = "rect", 
     xmin = (summary(r22sr_changepoint, robust = TRUE)$fixed["CL_Intercept", "l-95% CI"] - 10) / 20, 
@@ -290,7 +290,7 @@ pr22sr <- plot(conditional_effects(r22sr_changepoint), plot = FALSE)[[3]] +
     aes(x = x, y = y),
     col = "orange", inherit.aes = FALSE) +
   labs(
-    title = "Low- and medium-altitude hay meadows (R2.2)",
+    title = "Lowland hay meadows",
     x = "",
     y = "Total number of species"
   ) +
@@ -300,7 +300,7 @@ pr22sr <- plot(conditional_effects(r22sr_changepoint), plot = FALSE)[[3]] +
 tymax <- 30
 pr22uzl <- plot(conditional_effects(r22uzl_changepoint), plot = FALSE)[[3]] + 
   ylim(0, tymax) + 
-  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R22") %>% mutate(S = UZL), inherit.aes = FALSE, cex = 0.6, col = "grey") +
+  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R22") %>% mutate(S = UZL), inherit.aes = FALSE, cex = 0.4, col = "grey") +
   annotate(
     geom = "rect", 
     xmin = (summary(r22uzl_changepoint, robust = TRUE)$fixed["CL_Intercept", "l-95% CI"] - 10) / 20, 
@@ -322,7 +322,7 @@ pr22uzl <- plot(conditional_effects(r22uzl_changepoint), plot = FALSE)[[3]] +
 tymax <- 80
 pr23sr <- plot(conditional_effects(r23sr_changepoint), plot = FALSE)[[3]] + 
   ylim(0, tymax) + 
-  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R23") %>% mutate(S = SR), inherit.aes = FALSE, cex = 0.6, col = "grey") +
+  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R23") %>% mutate(S = SR), inherit.aes = FALSE, cex = 0.4, col = "grey") +
   annotate(
     geom = "rect", 
     xmin = (summary(r23sr_changepoint, robust = TRUE)$fixed["CL_Intercept", "l-95% CI"] - 10) / 20, 
@@ -335,7 +335,7 @@ pr23sr <- plot(conditional_effects(r23sr_changepoint), plot = FALSE)[[3]] +
     aes(x = x, y = y),
     col = "orange", inherit.aes = FALSE) +
   labs(
-    title = "Mountain hay meadows (R2.3)",
+    title = "Mountain hay meadows",
     x = "",
     y = ""
   ) +
@@ -345,7 +345,7 @@ pr23sr <- plot(conditional_effects(r23sr_changepoint), plot = FALSE)[[3]] +
 tymax <- 30
 pr23uzl <- plot(conditional_effects(r23uzl_changepoint), plot = FALSE)[[3]] + 
   ylim(0, tymax) + 
-  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R23") %>% mutate(S = UZL), inherit.aes = FALSE, cex = 0.6, col = "grey") +
+  geom_point(aes(x = ndep, y = S), data = dat %>% filter(EUNIS == "R23") %>% mutate(S = UZL), inherit.aes = FALSE, cex = 0.4, col = "grey") +
   annotate(
     geom = "rect", 
     xmin = (summary(r23uzl_changepoint, robust = TRUE)$fixed["CL_Intercept", "l-95% CI"] - 10) / 20, 
@@ -364,7 +364,11 @@ pr23uzl <- plot(conditional_effects(r23uzl_changepoint), plot = FALSE)[[3]] +
   scale_x_continuous(breaks = (seq(0,40,10) - 10) / 20, labels = seq(0,40,10), limits = c(-0.5, 1.5))
 
 # Make figure
-pdf("Figures/Fig_changepoint_R22vsR23.pdf", width = 10, height = 8)
+png("Figures/Fig_changepoint_R22vsR23.png", width = 2300, height = 1533, res = 300)
+(pr22sr | pr23sr) / (pr22uzl | pr23uzl)  
+grid::grid.draw(grid::textGrob(expression(paste("Nitrogen deposition [kg N ", ha^-1, " ", yr^-1, "]")), y = 0.02))
+dev.off()
+pdf("Figures/Fig_changepoint_R22vsR23.pdf", width = 8, height = 5)
 (pr22sr | pr23sr) / (pr22uzl | pr23uzl)  
 grid::grid.draw(grid::textGrob(expression(paste("Nitrogen deposition [kg N ", ha^-1, " ", yr^-1, "]")), y = 0.02))
 dev.off()
